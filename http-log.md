@@ -8,7 +8,11 @@
 curl -i https://jsonplaceholder.typicode.com/posts/1
 ```
 
+<<<<<<< HEAD
 ### Response 
+=======
+### Response
+>>>>>>> f285a97f7d77fd5335f9822d19bd55f3260d14d7
 
 ```text
 HTTP/2 200

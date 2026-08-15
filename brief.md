@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # AlgoViz
+=======
+# CampusEats Brief
+>>>>>>> f285a97f7d77fd5335f9822d19bd55f3260d14d7
 
 ## What
 
@@ -59,4 +63,7 @@ The main verbs (actions/tasks/contracts) in CampusEats are:
 ## Summary
 
 CampusEats connects students with campus food providers through an online ordering system. Students can discover food, order it, pay, and track its progress. Food providers can manage their menus and process incoming orders, while administrators oversee the system. The core concepts are students, providers, menus, food items, orders, payments, and order statuses, while the main actions include browsing, ordering, paying, preparing, updating, and tracking.
+<<<<<<< HEAD
 `
+=======
+>>>>>>> f285a97f7d77fd5335f9822d19bd55f3260d14d7
