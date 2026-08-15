@@ -1,19 +1,11 @@
 # HTTP Log
 
-## Request 1
-
 ### Request
 
-```bash
 curl -i https://jsonplaceholder.typicode.com/posts/1
-```
-
 
 ### Response 
-=======
-### Response
 
-```text
 HTTP/2 200
 date: Fri, 14 Aug 2026 19:12:34 GMT
 content-type: application/json; charset=utf-8
@@ -103,8 +95,6 @@ alt-svc: h3=":443"
 
 **Content-Type:** application/json — The response is in JSON format.
 
----
-
 ## Request 3
 
 ### Request
@@ -169,7 +159,6 @@ alt-svc: h3=":443"
 
 **Content-Type:** application/json — The response is in JSON format.
 
----
 
 ## Request 4
 
@@ -219,7 +208,6 @@ alt-svc: h3=":443"
 
 **Content-Type:** application/json — The response is in JSON format.
 
----
 
 ## Request 5 — Deliberate Failure
 
