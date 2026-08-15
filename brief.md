@@ -1,69 +1,89 @@
-<<<<<<< HEAD
-# AlgoViz
-=======
-# CampusEats Brief
->>>>>>> f285a97f7d77fd5335f9822d19bd55f3260d14d7
+# AlgoViz — DSA Visualizer Brief
 
 ## What
 
-CampusEats is a campus food ordering system. It helps students find food available on campus, view menus, place orders, and track their orders. Food providers can manage their menus and receive and process student orders.
+AlgoViz is a web-based DSA learning and visualization platform. It helps students understand how data structures and algorithms work by showing their execution step-by-step instead of only showing the final answer.
 
-The system provides a simple way to connect students who want food with campus food providers who prepare and fulfill those orders.
+Users can select an algorithm, provide input, and watch the algorithm execute through an interactive visualization. The system highlights elements that are being compared, moved, inserted, or changed. It also provides time and space complexity information for each algorithm.
+
+The initial system focuses on Sorting algorithms such as Bubble Sort, Selection Sort, and Insertion Sort, Searching algorithms such as Linear Search and Binary Search, and basic data structures including Stack, Queue, and Linked List.
 
 ## Who
 
-The main users of CampusEats are:
+The main users of AlgoViz are:
 
-* **Students** — browse available food, view menus, place orders, and track their orders.
-* **Food providers** — manage food items and menus, receive orders, and update order status.
-* **Campus administrators** — manage the overall system and monitor campus food services.
+- Students — use the visualizer to learn and understand DSA concepts.
+- Learners — practice algorithms and data structures interactively.
+- Users — select algorithms, provide input, control execution, and review previous visualizations.
+- Administrators — manage user access and the overall application.
 
 ## Nouns
 
-The main nouns (things/services) in CampusEats are:
+The main nouns (things, objects, and services) in AlgoViz are:
 
-* Student
-* Food provider
-* Administrator
-* Food item
-* Menu
-* Restaurant or food outlet
-* Order
-* Order item
-* Cart
-* Payment
-* Order status
-* Campus
-* Delivery or pickup
+- User
+- Algorithm
+- Data Structure
+- Sorting Algorithm
+- Searching Algorithm
+- Bubble Sort
+- Selection Sort
+- Insertion Sort
+- Linear Search
+- Binary Search
+- Stack
+- Queue
+- Linked List
+- Input
+- Data
+- Visualization
+- Execution Step
+- Operation
+- Comparison
+- Complexity
+- Time Complexity
+- Space Complexity
+- Algorithm History
+- User Progress
+- REST API
+- Backend
+- Frontend
 
 ## Verbs
 
-The main verbs (actions/tasks/contracts) in CampusEats are:
+The main verbs (actions, tasks, and contracts) in AlgoViz are:
 
-* Register
-* Log in
-* Browse
-* Search
-* View menu
-* Add item
-* Remove item
-* Place order
-* Make payment
-* Confirm order
-* Prepare order
-* Update order status
-* Track order
-* Cancel order
-* Manage menu
-* Add food item
-* Edit food item
-* Remove food item
-* Manage orders
+- Register
+- Log in
+- Authenticate
+- Select algorithm
+- Provide input
+- Start visualization
+- Play
+- Pause
+- Resume
+- Move to next step
+- Move to previous step
+- Reset
+- Change speed
+- Compare elements
+- Move elements
+- Insert elements
+- Change data
+- Execute algorithm
+- Visualize algorithm
+- Display operation
+- Display complexity
+- Track progress
+- Store history
+- View history
+- Practice algorithm
+- Manage users
 
 ## Summary
 
-CampusEats connects students with campus food providers through an online ordering system. Students can discover food, order it, pay, and track its progress. Food providers can manage their menus and process incoming orders, while administrators oversee the system. The core concepts are students, providers, menus, food items, orders, payments, and order statuses, while the main actions include browsing, ordering, paying, preparing, updating, and tracking.
-<<<<<<< HEAD
-`
-=======
->>>>>>> f285a97f7d77fd5335f9822d19bd55f3260d14d7
+AlgoViz makes DSA concepts easier to understand through interactive visual learning. Instead of only showing code and the final output, it shows what happens during each execution step. The system allows users to control the visualization using Play, Pause, Next, Previous, Reset, and Speed controls.
+
+The backend executes algorithms and provides execution steps through REST APIs, while the frontend displays those steps as an interactive visualization. The system can store user history and progress so learners can review their previous practice.
+
+The main concepts are algorithms, data structures, users, inputs, execution steps, operations, visualizations, and complexity information. The main actions are selecting, executing, visualizing, controlling, practicing, tracking, and reviewing algorithms.
