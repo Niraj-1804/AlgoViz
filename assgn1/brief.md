@@ -79,7 +79,7 @@ The main verbs (actions, tasks, and contracts) in AlgoViz are:
 - Store history
 - View history
 - Practice algorithm
-- manage Users
+- Manage Users
 
 ## Summary
 
@@ -88,3 +88,5 @@ AlgoViz makes DSA concepts easier to understand through interactive visual learn
 The backend executes algorithms and provides execution steps through REST APIs, while the frontend displays those steps as an interactive visualization. The system can store user history and progress so learners can review their previous practice.
 
 The main concepts are algorithms, data structures, users, inputs, execution steps, operations, visualizations, and complexity information. The main actions are selecting, executing, visualizing, controlling, practicing, tracking, and reviewing algorithms.
+
+
