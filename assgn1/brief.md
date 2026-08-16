@@ -2,6 +2,7 @@
 
 ## What
 
+
 AlgoViz is a web-based DSA learning and visualization platform. It helps students understand how data structures and algorithms work by showing their execution step-by-step instead of only showing the final answer.
 
 Users can select an algorithm, provide input, and watch the algorithm execute through an interactive visualization. The system highlights elements that are being compared, moved, inserted, or changed. It also provides time and space complexity information for each algorithm.
