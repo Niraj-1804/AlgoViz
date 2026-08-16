@@ -79,7 +79,7 @@ The main verbs (actions, tasks, and contracts) in AlgoViz are:
 - Store history
 - View history
 - Practice algorithm
-- manage users
+- manage Users
 
 ## Summary
 
