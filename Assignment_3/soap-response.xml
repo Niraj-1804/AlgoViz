@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:tns="http://campuseats.example.com/payfast">
+  <soap:Body>
+    <tns:ChargeResponse>
+      <tns:transactionId>TXN-PF-88213765</tns:transactionId>
+      <tns:status>APPROVED</tns:status>
+      <tns:authCode>AUTH-7729</tns:authCode>
+    </tns:ChargeResponse>
+  </soap:Body>
+</soap:Envelope>
