@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:tns="http://campuseats.example.com/payfast">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Card Declined</faultstring>
+      <detail>
+        <tns:PaymentFaultDetail>
+          <tns:code>card_declined</tns:code>
+          <tns:message>The issuing bank declined this transaction.</tns:message>
+        </tns:PaymentFaultDetail>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>
