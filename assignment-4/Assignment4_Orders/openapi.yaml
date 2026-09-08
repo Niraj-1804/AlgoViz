@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: CampusEats Orders Service
+  version: 1.0.0
+  description: REST Orders service for Assignment 4.
+servers:
+  - url: http://localhost:8080
+paths:
+  /orders:
+    post:
+      summary: Create an order
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateOrderRequest' }
+      responses:
+        '201':
+          description: Order created
+          headers:
+            Location: { schema: { type: string } }
+          content:
+            application/json: { schema: { $ref: '#/components/schemas/Order' } }
+        '400': { description: Malformed or invalid body, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+        '409': { description: Idempotency/state conflict, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+        '422': { description: Payment rejected by the domain, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+        '503': { description: Payment dependency unavailable, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+    get:
+      summary: List orders, optionally filtered by status
+      parameters:
+        - in: query
+          name: status
+          required: false
+          schema: { type: string, enum: [PENDING_PAYMENT, CONFIRMED, CANCELLED] }
+      responses:
+        '200':
+          description: Filtered order list
+          content:
+            application/json: { schema: { $ref: '#/components/schemas/OrderList' } }
+        '400': { description: Invalid filter, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+  /orders/{orderId}:
+    get:
+      summary: Read one order
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200': { description: Order found, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        '404': { description: Missing order, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+  /orders/{orderId}/cancellation:
+    patch:
+      summary: Cancel an order
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200': { description: Order cancelled, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        '404': { description: Missing order, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+        '409': { description: Invalid state transition, content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+components:
+  parameters:
+    OrderId:
+      name: orderId
+      in: path
+      required: true
+      schema: { type: string }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string }
+  schemas:
+    CreateOrderRequest:
+      type: object
+      required: [customerId, item, quantity, amount]
+      properties:
+        customerId: { type: string }
+        item: { type: string }
+        quantity: { type: integer, minimum: 1 }
+        amount: { type: number, exclusiveMinimum: 0 }
+    Order:
+      type: object
+      required: [id, customerId, item, quantity, amount, status, createdAt]
+      properties:
+        id: { type: string }
+        customerId: { type: string }
+        item: { type: string }
+        quantity: { type: integer }
+        amount: { type: number }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+    OrderList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Order' }
+    Problem:
+      type: object
+      required: [type, title, status, detail]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
