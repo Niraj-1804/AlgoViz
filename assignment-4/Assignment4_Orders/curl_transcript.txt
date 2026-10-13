@@ -1,0 +1,51 @@
+$ curl -i -X POST http://localhost:18080/orders -H "Content-Type: application/json" -H "Idempotency-Key: demo-001" -d ...
+HTTP/1.0 201 Created
+Server: BaseHTTP/0.6 Python/3.13.5
+Date: Tue, 08 Sep 2026 15:40:41 GMT
+Content-Type: application/json
+Content-Length: 171
+Location: /orders/ORD-8AAF0F4B98
+
+{"id": "ORD-8AAF0F4B98", "customerId": "C101", "item": "Veg Thali", "quantity": 2, "amount": 240.0, "status": "CONFIRMED", "createdAt": "2026-09-08T15:40:41.055317+00:00"}
+$ curl -i -X POST ... same Idempotency-Key
+HTTP/1.0 201 Created
+Server: BaseHTTP/0.6 Python/3.13.5
+Date: Tue, 08 Sep 2026 15:40:41 GMT
+Content-Type: application/json
+Content-Length: 171
+Location: /orders/ORD-8AAF0F4B98
+
+{"id": "ORD-8AAF0F4B98", "customerId": "C101", "item": "Veg Thali", "quantity": 2, "amount": 240.0, "status": "CONFIRMED", "createdAt": "2026-09-08T15:40:41.055317+00:00"}
+$ curl -i -X POST ... malformed body
+HTTP/1.0 400 Bad Request
+Server: BaseHTTP/0.6 Python/3.13.5
+Date: Tue, 08 Sep 2026 15:40:41 GMT
+Content-Type: application/json
+Content-Length: 136
+
+{"type": "https://campuseats.example.com/problems/bad-request", "title": "Bad Request", "status": 400, "detail": "Malformed JSON body."}
+$ curl -i http://localhost:18080/orders/ORD-NOTFOUND
+HTTP/1.0 404 Not Found
+Server: BaseHTTP/0.6 Python/3.13.5
+Date: Tue, 08 Sep 2026 15:40:41 GMT
+Content-Type: application/json
+Content-Length: 128
+
+{"type": "https://campuseats.example.com/problems/not-found", "title": "Not Found", "status": 404, "detail": "Order not found."}
+created id: ORD-F34261EAC9
+$ curl -i -X PATCH /orders/<created-id>/cancellation
+HTTP/1.0 200 OK
+Server: BaseHTTP/0.6 Python/3.13.5
+Date: Tue, 08 Sep 2026 15:40:41 GMT
+Content-Type: application/json
+Content-Length: 167
+
+{"id": "ORD-F34261EAC9", "customerId": "C102", "item": "Pizza", "quantity": 1, "amount": 180.0, "status": "CANCELLED", "createdAt": "2026-09-08T15:40:41.084721+00:00"}
+$ curl -i -X PATCH ... again (state conflict)
+HTTP/1.0 409 Conflict
+Server: BaseHTTP/0.6 Python/3.13.5
+Date: Tue, 08 Sep 2026 15:40:41 GMT
+Content-Type: application/json
+Content-Length: 137
+
+{"type": "https://campuseats.example.com/problems/conflict", "title": "Conflict", "status": 409, "detail": "Order is already cancelled."}
