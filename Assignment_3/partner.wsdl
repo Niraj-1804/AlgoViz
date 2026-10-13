@@ -1,93 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions name="PayFastPaymentGateway"
-             targetNamespace="http://campuseats.example.com/payfast"
-             xmlns:tns="http://campuseats.example.com/payfast"
-             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-             xmlns="http://schemas.xmlsoap.org/wsdl/">
-
-  <!-- ================= TYPES ================= -->
-  <types>
-    <xsd:schema targetNamespace="http://campuseats.example.com/payfast">
-
-      <xsd:element name="ChargeRequest">
-        <xsd:complexType>
-          <xsd:sequence>
-            <xsd:element name="orderId" type="xsd:string"/>
-            <xsd:element name="amount" type="xsd:decimal"/>
-            <xsd:element name="currency" type="xsd:string"/>
-            <xsd:element name="cardToken" type="xsd:string"/>
-          </xsd:sequence>
-        </xsd:complexType>
-      </xsd:element>
-
-      <xsd:element name="ChargeResponse">
-        <xsd:complexType>
-          <xsd:sequence>
-            <xsd:element name="transactionId" type="xsd:string"/>
-            <xsd:element name="status" type="xsd:string"/>
-            <xsd:element name="authCode" type="xsd:string"/>
-          </xsd:sequence>
-        </xsd:complexType>
-      </xsd:element>
-
-      <xsd:element name="PaymentFaultDetail">
-        <xsd:complexType>
-          <xsd:sequence>
-            <xsd:element name="code" type="xsd:string"/>
-            <xsd:element name="message" type="xsd:string"/>
-          </xsd:sequence>
-        </xsd:complexType>
-      </xsd:element>
-
-    </xsd:schema>
-  </types>
-
-  <!-- ================= MESSAGES ================= -->
-  <message name="ChargeRequestMessage">
-    <part name="parameters" element="tns:ChargeRequest"/>
-  </message>
-
-  <message name="ChargeResponseMessage">
-    <part name="parameters" element="tns:ChargeResponse"/>
-  </message>
-
-  <message name="PaymentFaultMessage">
-    <part name="fault" element="tns:PaymentFaultDetail"/>
-  </message>
-
-  <!-- ================= PORT TYPE ================= -->
-  <portType name="PayFastPortType">
-    <operation name="charge">
-      <input message="tns:ChargeRequestMessage"/>
-      <output message="tns:ChargeResponseMessage"/>
-      <fault name="PaymentFault" message="tns:PaymentFaultMessage"/>
-    </operation>
-  </portType>
-
-  <!-- ================= BINDING (SOAP over HTTP) ================= -->
-  <binding name="PayFastBinding" type="tns:PayFastPortType">
-    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-
-    <operation name="charge">
-      <soap:operation soapAction="http://campuseats.example.com/payfast/charge"/>
-      <input>
-        <soap:body use="literal"/>
-      </input>
-      <output>
-        <soap:body use="literal"/>
-      </output>
-      <fault name="PaymentFault">
-        <soap:fault name="PaymentFault" use="literal"/>
-      </fault>
-    </operation>
-  </binding>
-
-  <!-- ================= SERVICE ================= -->
-  <service name="PayFastService">
-    <port name="PayFastPort" binding="tns:PayFastBinding">
-      <soap:address location="https://api.payfast-gateway.example.com/payfast/v1/charge"/>
-    </port>
-  </service>
-
-</definitions>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+ xmlns:tns="https://api.labcompute.example/algorithms/v1"
+ targetNamespace="https://api.labcompute.example/algorithms/v1"
+ name="LabComputeAlgorithmService">
+ <wsdl:documentation>
+  Fictional external academic execution provider; not AlgoViz's Algorithm Service.
+  Design-time WSDL 1.1, SOAP 1.1 document/literal contract.
+  bubbleSortTrace sorts ascending; indices are zero-based. Each step contains
+  the array state after the named action (compare leaves the state unchanged).
+  Complexity values describe the in-place sorting algorithm, excluding trace storage.
+ </wsdl:documentation>
+ <wsdl:types>
+  <xsd:schema targetNamespace="https://api.labcompute.example/algorithms/v1"
+   elementFormDefault="qualified">
+   <xsd:simpleType name="NonEmptyString">
+    <xsd:restriction base="xsd:string"><xsd:minLength value="1"/></xsd:restriction>
+   </xsd:simpleType>
+   <xsd:complexType name="IntArray">
+    <xsd:sequence><xsd:element name="item" type="xsd:int" minOccurs="2" maxOccurs="20"/></xsd:sequence>
+   </xsd:complexType>
+   <xsd:simpleType name="Action">
+    <xsd:restriction base="xsd:string">
+     <xsd:enumeration value="COMPARE"/><xsd:enumeration value="SWAP"/>
+    </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:complexType name="TraceStep">
+    <xsd:sequence>
+     <xsd:element name="stepNumber" type="xsd:positiveInteger"/>
+     <xsd:element name="action" type="tns:Action"/>
+     <xsd:element name="leftIndex" type="xsd:nonNegativeInteger"/>
+     <xsd:element name="rightIndex" type="xsd:nonNegativeInteger"/>
+     <xsd:element name="state" type="tns:IntArray"/>
+    </xsd:sequence>
+   </xsd:complexType>
+   <xsd:element name="Credentials">
+    <xsd:complexType><xsd:sequence>
+     <xsd:element name="clientId" type="tns:NonEmptyString"/>
+     <xsd:element name="apiKey" type="tns:NonEmptyString"/>
+    </xsd:sequence>
+    <xsd:anyAttribute namespace="http://schemas.xmlsoap.org/soap/envelope/" processContents="lax"/>
+    </xsd:complexType>
+   </xsd:element>
+   <xsd:element name="BubbleSortRequest">
+    <xsd:complexType><xsd:sequence>
+     <xsd:element name="requestId" type="tns:NonEmptyString"/>
+     <xsd:element name="values" type="tns:IntArray"/>
+    </xsd:sequence></xsd:complexType>
+   </xsd:element>
+   <xsd:element name="BubbleSortResponse">
+    <xsd:complexType><xsd:sequence>
+     <xsd:element name="requestId" type="tns:NonEmptyString"/>
+     <xsd:element name="sortedValues" type="tns:IntArray"/>
+     <xsd:element name="steps"><xsd:complexType><xsd:sequence>
+      <xsd:element name="step" type="tns:TraceStep" minOccurs="1" maxOccurs="unbounded"/>
+     </xsd:sequence></xsd:complexType></xsd:element>
+     <xsd:element name="timeComplexity" type="xsd:string" fixed="O(n^2) worst case"/>
+     <xsd:element name="spaceComplexity" type="xsd:string" fixed="O(1) auxiliary, excluding trace"/>
+    </xsd:sequence></xsd:complexType>
+   </xsd:element>
+   <xsd:element name="ExecutionFault">
+    <xsd:complexType><xsd:sequence>
+     <xsd:element name="requestId" type="tns:NonEmptyString"/>
+     <xsd:element name="code" type="xsd:string" fixed="ENGINE_UNAVAILABLE"/>
+     <xsd:element name="message" type="tns:NonEmptyString"/>
+    </xsd:sequence></xsd:complexType>
+   </xsd:element>
+  </xsd:schema>
+ </wsdl:types>
+ <wsdl:message name="CredentialsMessage"><wsdl:part name="credentials" element="tns:Credentials"/></wsdl:message>
+ <wsdl:message name="BubbleSortInput"><wsdl:part name="parameters" element="tns:BubbleSortRequest"/></wsdl:message>
+ <wsdl:message name="BubbleSortOutput"><wsdl:part name="parameters" element="tns:BubbleSortResponse"/></wsdl:message>
+ <wsdl:message name="ExecutionFaultMessage"><wsdl:part name="detail" element="tns:ExecutionFault"/></wsdl:message>
+ <wsdl:portType name="AlgorithmPortType">
+  <wsdl:operation name="bubbleSortTrace">
+   <wsdl:input message="tns:BubbleSortInput"/>
+   <wsdl:output message="tns:BubbleSortOutput"/>
+   <wsdl:fault name="ExecutionFault" message="tns:ExecutionFaultMessage"/>
+  </wsdl:operation>
+ </wsdl:portType>
+ <wsdl:binding name="AlgorithmSoapBinding" type="tns:AlgorithmPortType">
+  <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+  <wsdl:operation name="bubbleSortTrace">
+   <soap:operation soapAction="https://api.labcompute.example/algorithms/v1/bubbleSortTrace"/>
+   <wsdl:input>
+    <soap:header message="tns:CredentialsMessage" part="credentials" use="literal"/>
+    <soap:body parts="parameters" use="literal"/>
+   </wsdl:input>
+   <wsdl:output><soap:body parts="parameters" use="literal"/></wsdl:output>
+   <wsdl:fault name="ExecutionFault"><soap:fault name="ExecutionFault" use="literal"/></wsdl:fault>
+  </wsdl:operation>
+ </wsdl:binding>
+ <wsdl:service name="LabComputeAlgorithmService">
+  <wsdl:port name="AlgorithmSoapPort" binding="tns:AlgorithmSoapBinding">
+   <soap:address location="https://api.labcompute.example/soap/v1/AlgorithmService"/>
+  </wsdl:port>
+ </wsdl:service>
+</wsdl:definitions>
