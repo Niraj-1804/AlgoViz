@@ -1,4 +1,0 @@
-# Runtime uses Python standard library only.
-# Optional external validation command required by the assignment:
-openapi-spec-validator
-pytest

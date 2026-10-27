@@ -1,1 +1,0 @@
-OpenAPI validation: 0 errors
