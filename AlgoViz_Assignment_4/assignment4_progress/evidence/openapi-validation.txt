@@ -1,2 +1,0 @@
-openapi-spec-validator: PASS (zero errors)
-Validated: openapi.yaml; OpenAPI 3.0.3; four operations

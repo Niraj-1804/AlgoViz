@@ -1,2 +1,0 @@
-PASS: live curl scenarios, real HTTP retries, no retry on 4xx, and outage fallback.
-Saved evidence/curl-transcript.txt, progress.log and visualization.log
