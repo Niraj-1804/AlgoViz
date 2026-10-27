@@ -1,0 +1,324 @@
+openapi: 3.0.3
+info:
+  title: AlgoViz Progress Service - Group 17
+  version: 1.0.0
+  description: Assignment 4 teaching implementation of Assignment 2 Progress Service. Trusted local
+    demo; authentication is outside this exercise. The Progress Service owns progress only and accesses
+    visualization data through HTTP. Uses a single process; data and idempotency receipts reset on
+    restart.
+servers:
+- url: http://127.0.0.1:5050
+  description: Local example; set PROGRESS_PORT when running.
+paths:
+  /progress-records:
+    post:
+      operationId: createProgress
+      summary: Start tracking one user/algorithm pair
+      description: Verify the supplied visualization using real HTTP before creating an IN_PROGRESS
+        record. Duplicate pairs with a new key are conflicts. Single-process in-memory storage. No
+        asynchronous work remains after the response.
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProgress'
+      responses:
+        '201':
+          description: Created, or replay of the original successful creation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressRecord'
+          headers:
+            Location:
+              required: true
+              schema:
+                $ref: '#/components/schemas/LocationValue'
+        '400':
+          $ref: '#/components/responses/E400'
+        '409':
+          $ref: '#/components/responses/E409'
+        '413':
+          $ref: '#/components/responses/E413'
+        '415':
+          $ref: '#/components/responses/E415'
+        '422':
+          $ref: '#/components/responses/E422'
+        '502':
+          $ref: '#/components/responses/E502'
+        '503':
+          $ref: '#/components/responses/E503'
+        '500':
+          $ref: '#/components/responses/E500'
+    get:
+      operationId: listProgress
+      summary: List records belonging to a user, optionally filtered by status
+      parameters:
+      - $ref: '#/components/parameters/UserFilter'
+      - $ref: '#/components/parameters/StatusFilter'
+      responses:
+        '200':
+          description: Matching records; empty list if none match.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressList'
+        '400':
+          $ref: '#/components/responses/E400'
+        '500':
+          $ref: '#/components/responses/E500'
+  /progress-records/{id}:
+    get:
+      operationId: getProgress
+      summary: Read a progress record
+      parameters:
+      - $ref: '#/components/parameters/RecordId'
+      responses:
+        '200':
+          description: The current public representation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressRecord'
+        '404':
+          $ref: '#/components/responses/E404'
+        '500':
+          $ref: '#/components/responses/E500'
+  /progress-records/{id}/completion:
+    put:
+      operationId: completeProgress
+      summary: Record completion using a completed visualization
+      description: Verify completion through HTTP, then atomically change status. Repeating the same
+        completed visualization returns the current original completion without calling the dependency.
+        A different visualization after completion conflicts.
+      parameters:
+      - $ref: '#/components/parameters/RecordId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletionRequest'
+      responses:
+        '200':
+          description: Progress completed or same completion replayed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressRecord'
+        '400':
+          $ref: '#/components/responses/E400'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '413':
+          $ref: '#/components/responses/E413'
+        '415':
+          $ref: '#/components/responses/E415'
+        '422':
+          $ref: '#/components/responses/E422'
+        '502':
+          $ref: '#/components/responses/E502'
+        '503':
+          $ref: '#/components/responses/E503'
+        '500':
+          $ref: '#/components/responses/E500'
+components:
+  schemas:
+    PositiveId:
+      type: integer
+      minimum: 1
+      maximum: 2147483647
+    ResourceId:
+      type: string
+      description: Public opaque resource identifier.
+    IdempotencyKey:
+      type: string
+      minLength: 1
+      maxLength: 128
+      pattern: ^[A-Za-z0-9._:-]+$
+    ProgressStatus:
+      type: string
+      enum:
+      - IN_PROGRESS
+      - COMPLETED
+    CreateProgress:
+      type: object
+      additionalProperties: false
+      required:
+      - userId
+      - algorithmId
+      - visualizationId
+      properties:
+        userId:
+          $ref: '#/components/schemas/PositiveId'
+        algorithmId:
+          $ref: '#/components/schemas/PositiveId'
+        visualizationId:
+          $ref: '#/components/schemas/PositiveId'
+    CompletionRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - visualizationId
+      properties:
+        visualizationId:
+          $ref: '#/components/schemas/PositiveId'
+    ProgressRecord:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - userId
+      - algorithmId
+      - visualizationId
+      - status
+      - createdAt
+      - completedAt
+      properties:
+        id:
+          $ref: '#/components/schemas/ResourceId'
+        userId:
+          $ref: '#/components/schemas/PositiveId'
+        algorithmId:
+          $ref: '#/components/schemas/PositiveId'
+        visualizationId:
+          $ref: '#/components/schemas/PositiveId'
+        status:
+          $ref: '#/components/schemas/ProgressStatus'
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+    ProgressList:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - count
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgressRecord'
+        count:
+          type: integer
+          minimum: 0
+    Problem:
+      type: object
+      additionalProperties: false
+      required:
+      - type
+      - title
+      - status
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+    LocationValue:
+      type: string
+      description: Relative URL of the created progress resource.
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/IdempotencyKey'
+      description: 'Same key and same body replay the original 201/body/Location, even after record
+        changes. Changed body with same key: 409. Success keys live for the process lifetime.'
+    RecordId:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/ResourceId'
+    UserFilter:
+      name: userId
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/PositiveId'
+    StatusFilter:
+      name: status
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/ProgressStatus'
+  responses:
+    E400:
+      description: Malformed JSON, invalid fields, identifier, query, or missing/invalid idempotency
+        key.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    E404:
+      description: The requested progress record does not exist.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    E409:
+      description: Same key with a different payload, duplicate user/algorithm record, or conflicting
+        completion.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    E413:
+      description: Request exceeds the 16 KiB body limit.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    E415:
+      description: Unsupported request media type. Use Content-Type application/json (optional charset allowed).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    E422:
+      description: 'Invalid progress: referenced visualization is missing, mismatched, failed, or
+        not yet completed when completion is requested.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    E503:
+      description: Cannot verify progress because Visualization Service is unavailable. Includes
+        the dependency-unavailable failure class corresponding to Assignment 3 ENGINE_UNAVAILABLE;
+        no SOAP/vendor code is exposed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    E502:
+      description: Dependency refused the service request, redirected it, or returned a malformed/unexpected
+        response.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    E500:
+      description: Unexpected internal error; details are not exposed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
