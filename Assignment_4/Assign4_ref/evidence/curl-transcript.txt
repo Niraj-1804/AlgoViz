@@ -1,0 +1,242 @@
+Actual local HTTP demonstration. Ephemeral ports are selected by this script.
+The seeded Visualization demo injects two 503 responses before the first success.
+
+## POST rejects text/plain before creating a record
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: text/plain' --data '{"userId": 28, "algorithmId": 1, "visualizationId": 101}' -H 'Idempotency-Key: wrong-media'
+HTTP/1.1 415 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:56 GMT
+
+{"type":"https://algoviz.example/problems/unsupported-media-type","title":"Unsupported Media Type","status":415,"detail":"Content-Type must be application/json."}
+
+## PUT rejects text/plain before looking up a record
+$ curl -i -sS --max-time 15 -X PUT http://127.0.0.1:53807/progress-records/missing/completion -H 'Content-Type: text/plain' --data '{"visualizationId": 101}'
+HTTP/1.1 415 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:56 GMT
+
+{"type":"https://algoviz.example/problems/unsupported-media-type","title":"Unsupported Media Type","status":415,"detail":"Content-Type must be application/json."}
+
+## Create succeeds after two dependency retries
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 1, "visualizationId": 101}' -H 'Idempotency-Key: demo-1'
+HTTP/1.1 201 
+Location: /progress-records/c22a0ae9-53c9-49fe-aeca-21b98bfb569d
+Cache-Control: no-store
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"id":"c22a0ae9-53c9-49fe-aeca-21b98bfb569d","userId":28,"algorithmId":1,"visualizationId":101,"status":"IN_PROGRESS","createdAt":"2026-10-13T11:51:57.440726390Z","completedAt":null}
+
+## Required: same request and key return original
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 1, "visualizationId": 101}' -H 'Idempotency-Key: demo-1'
+HTTP/1.1 201 
+Location: /progress-records/c22a0ae9-53c9-49fe-aeca-21b98bfb569d
+Cache-Control: no-store
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"id":"c22a0ae9-53c9-49fe-aeca-21b98bfb569d","userId":28,"algorithmId":1,"visualizationId":101,"status":"IN_PROGRESS","createdAt":"2026-10-13T11:51:57.440726390Z","completedAt":null}
+
+## Required: malformed JSON rejected
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId":' -H 'Idempotency-Key: bad'
+HTTP/1.1 400 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+Connection: close
+
+{"type":"https://algoviz.example/problems/invalid-request","title":"Bad Request","status":400,"detail":"Invalid JSON fields, identifier, header or filter."}
+
+## Required: missing record
+$ curl -i -sS --max-time 15 -X GET http://127.0.0.1:53807/progress-records/missing-id
+HTTP/1.1 404 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"type":"https://algoviz.example/problems/not-found","title":"Not Found","status":404,"detail":"Progress record not found."}
+
+## Required: state conflict, duplicate user/algorithm with new key
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 1, "visualizationId": 101}' -H 'Idempotency-Key: demo-2'
+HTTP/1.1 409 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"type":"https://algoviz.example/problems/progress-conflict","title":"Conflict","status":409,"detail":"Progress already exists for this user and algorithm."}
+
+## Single read
+$ curl -i -sS --max-time 15 -X GET http://127.0.0.1:53807/progress-records/c22a0ae9-53c9-49fe-aeca-21b98bfb569d
+HTTP/1.1 200 
+Cache-Control: no-store
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"id":"c22a0ae9-53c9-49fe-aeca-21b98bfb569d","userId":28,"algorithmId":1,"visualizationId":101,"status":"IN_PROGRESS","createdAt":"2026-10-13T11:51:57.440726390Z","completedAt":null}
+
+## Filtered list
+$ curl -i -sS --max-time 15 -X GET 'http://127.0.0.1:53807/progress-records?userId=28&status=IN_PROGRESS'
+HTTP/1.1 200 
+Cache-Control: no-store
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"items":[{"id":"c22a0ae9-53c9-49fe-aeca-21b98bfb569d","userId":28,"algorithmId":1,"visualizationId":101,"status":"IN_PROGRESS","createdAt":"2026-10-13T11:51:57.440726390Z","completedAt":null}],"count":1}
+
+## State-changing completion sub-resource
+$ curl -i -sS --max-time 15 -X PUT http://127.0.0.1:53807/progress-records/c22a0ae9-53c9-49fe-aeca-21b98bfb569d/completion -H 'Content-Type: application/json' --data '{"visualizationId": 101}'
+HTTP/1.1 200 
+Cache-Control: no-store
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"id":"c22a0ae9-53c9-49fe-aeca-21b98bfb569d","userId":28,"algorithmId":1,"visualizationId":101,"status":"COMPLETED","createdAt":"2026-10-13T11:51:57.440726390Z","completedAt":"2026-10-13T11:51:57.535139563Z"}
+
+## Idempotent PUT completion repeat
+$ curl -i -sS --max-time 15 -X PUT http://127.0.0.1:53807/progress-records/c22a0ae9-53c9-49fe-aeca-21b98bfb569d/completion -H 'Content-Type: application/json' --data '{"visualizationId": 101}'
+HTTP/1.1 200 
+Cache-Control: no-store
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"id":"c22a0ae9-53c9-49fe-aeca-21b98bfb569d","userId":28,"algorithmId":1,"visualizationId":101,"status":"COMPLETED","createdAt":"2026-10-13T11:51:57.440726390Z","completedAt":"2026-10-13T11:51:57.535139563Z"}
+
+## Completion conflict: another visualization after completion
+$ curl -i -sS --max-time 15 -X PUT http://127.0.0.1:53807/progress-records/c22a0ae9-53c9-49fe-aeca-21b98bfb569d/completion -H 'Content-Type: application/json' --data '{"visualizationId": 104}'
+HTTP/1.1 409 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"type":"https://algoviz.example/problems/completion-conflict","title":"Conflict","status":409,"detail":"Progress already completed with another visualization."}
+
+## POST replay preserves original even after completion
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 1, "visualizationId": 101}' -H 'Idempotency-Key: demo-1'
+HTTP/1.1 201 
+Location: /progress-records/c22a0ae9-53c9-49fe-aeca-21b98bfb569d
+Cache-Control: no-store
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"id":"c22a0ae9-53c9-49fe-aeca-21b98bfb569d","userId":28,"algorithmId":1,"visualizationId":101,"status":"IN_PROGRESS","createdAt":"2026-10-13T11:51:57.440726390Z","completedAt":null}
+
+## Same key with changed payload
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 2, "visualizationId": 101}' -H 'Idempotency-Key: demo-1'
+HTTP/1.1 409 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"type":"https://algoviz.example/problems/idempotency-conflict","title":"Conflict","status":409,"detail":"Key already used with different data."}
+
+## Create another progress record
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 2, "visualizationId": 102}' -H 'Idempotency-Key: running'
+HTTP/1.1 201 
+Location: /progress-records/83165fd5-2c53-4364-8aa8-8959c66b749f
+Cache-Control: no-store
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"id":"83165fd5-2c53-4364-8aa8-8959c66b749f","userId":28,"algorithmId":2,"visualizationId":102,"status":"IN_PROGRESS","createdAt":"2026-10-13T11:51:57.591180167Z","completedAt":null}
+
+## Domain rejection: running visualization cannot complete progress
+$ curl -i -sS --max-time 15 -X PUT http://127.0.0.1:53807/progress-records/83165fd5-2c53-4364-8aa8-8959c66b749f/completion -H 'Content-Type: application/json' --data '{"visualizationId": 102}'
+HTTP/1.1 422 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"type":"https://algoviz.example/problems/invalid-progress","title":"Unprocessable Entity","status":422,"detail":"Visualization is not eligible for this progress operation."}
+
+## Missing referenced visualization: upstream 404 is not retried
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 3, "visualizationId": 999}' -H 'Idempotency-Key: missing-session'
+HTTP/1.1 422 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"type":"https://algoviz.example/problems/invalid-progress","title":"Unprocessable Entity","status":422,"detail":"Referenced visualization does not exist."}
+
+## Upstream 429 is not retried
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 3, "visualizationId": 429}' -H 'Idempotency-Key: rate-limited'
+HTTP/1.1 502 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"type":"https://algoviz.example/problems/dependency-error","title":"Bad Gateway","status":502,"detail":"Visualization Service returned an invalid or refused response."}
+
+## Malformed upstream data becomes 502
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 3, "visualizationId": 502}' -H 'Idempotency-Key: malformed-remote'
+HTTP/1.1 502 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:57 GMT
+
+{"type":"https://algoviz.example/problems/dependency-error","title":"Bad Gateway","status":502,"detail":"Visualization Service returned an invalid or refused response."}
+
+## Persistent dependency 503 exhausts retry budget
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 3, "visualizationId": 503}' -H 'Idempotency-Key: unavailable'
+HTTP/1.1 503 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:58 GMT
+Connection: close
+
+{"type":"https://algoviz.example/problems/dependency-unavailable","title":"Service Unavailable","status":503,"detail":"Cannot verify learning progress right now. Please try again later."}
+
+## Connection refused: fallback after bounded retries
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 3, "visualizationId": 101}' -H 'Idempotency-Key: disconnected'
+HTTP/1.1 503 
+Cache-Control: no-store
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:59 GMT
+Connection: close
+
+{"type":"https://algoviz.example/problems/dependency-unavailable","title":"Service Unavailable","status":503,"detail":"Cannot verify learning progress right now. Please try again later."}
+
+## Stored idempotency result survives dependency outage
+$ curl -i -sS --max-time 15 -X POST http://127.0.0.1:53807/progress-records -H 'Content-Type: application/json' --data '{"userId": 28, "algorithmId": 1, "visualizationId": 101}' -H 'Idempotency-Key: demo-1'
+HTTP/1.1 201 
+Location: /progress-records/c22a0ae9-53c9-49fe-aeca-21b98bfb569d
+Cache-Control: no-store
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:59 GMT
+
+{"id":"c22a0ae9-53c9-49fe-aeca-21b98bfb569d","userId":28,"algorithmId":1,"visualizationId":101,"status":"IN_PROGRESS","createdAt":"2026-10-13T11:51:57.440726390Z","completedAt":null}
+
+## Failed dependency calls created no extra records
+$ curl -i -sS --max-time 15 -X GET 'http://127.0.0.1:53807/progress-records?userId=28'
+HTTP/1.1 200 
+Cache-Control: no-store
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 11:51:59 GMT
+
+{"items":[{"id":"c22a0ae9-53c9-49fe-aeca-21b98bfb569d","userId":28,"algorithmId":1,"visualizationId":101,"status":"COMPLETED","createdAt":"2026-10-13T11:51:57.440726390Z","completedAt":"2026-10-13T11:51:57.535139563Z"},{"id":"83165fd5-2c53-4364-8aa8-8959c66b749f","userId":28,"algorithmId":2,"visualizationId":102,"status":"IN_PROGRESS","createdAt":"2026-10-13T11:51:57.591180167Z","completedAt":null}],"count":2}
+
+All live scenario assertions passed.

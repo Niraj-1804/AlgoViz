@@ -1,0 +1,23 @@
+CS543 Assignment 6 — cURL commands
+Run these from Linux/macOS/Git Bash. For Windows PowerShell, use curl.exe rather than the curl alias.
+
+# Create order (Part A)
+curl -i -X POST http://localhost:8080/orders -H "Content-Type: application/json" -d '{"item":"Laptop","quantity":2}'
+
+# List orders
+curl -i http://localhost:8080/orders
+
+# Read order
+curl -i http://localhost:8080/orders/1
+
+# Invalid quantity (Part B)
+curl -i -X POST http://localhost:8080/orders -H "Content-Type: application/json" -d '{"item":"Laptop","quantity":0}'
+
+# Malformed JSON (Part B)
+curl -i -X POST http://localhost:8080/orders -H "Content-Type: application/json" -d '{"item":"Laptop","quantity":}'
+
+# Idempotency (Part C; use the same key/body twice)
+curl -i -X POST http://localhost:8080/orders -H "Content-Type: application/json" -H "Idempotency-Key: order-abc-123" -d '{"item":"Laptop","quantity":2}'
+
+# Cancel order (Part D)
+curl -i -X POST http://localhost:8080/orders/1/cancel
