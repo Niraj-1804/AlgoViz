@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusEats | Food Catalogue</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+    <div class="logo">🍔 CampusEats</div>
+    <span class="nav-tag">Campus Food Hub</span>
+</header>
+
+<main class="container">
+
+    <section class="hero">
+        <div>
+            <p class="eyebrow">YOUR CAMPUS, YOUR FOOD</p>
+            <h1>Discover Your<br><span>Favourite Food.</span></h1>
+            <p class="hero-text">
+                Explore delicious food options available on your campus.
+                Fresh choices, simple ordering!
+            </p>
+        </div>
+        <div class="hero-icon">🍕</div>
+    </section>
+
+    <section class="menu-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">EXPLORE THE MENU</p>
+                <h2>Today's Menu</h2>
+            </div>
+            <span class="menu-count" id="itemCount">Loading...</span>
+        </div>
+
+        <div id="menuList" class="menu-grid">
+            <p class="loading">Loading menu...</p>
+        </div>
+    </section>
+
+    <section class="add-section">
+        <div class="form-heading">
+            <p class="eyebrow">GROW OUR MENU</p>
+            <h2>➕ Add a New Item</h2>
+            <p>Add your favourite food to the CampusEats catalogue.</p>
+        </div>
+
+        <form id="itemForm">
+            <div class="form-group">
+                <label for="name">Food Name</label>
+                <input type="text" id="name" placeholder="e.g. Cheese Burger" required>
+            </div>
+
+            <div class="form-group">
+                <label for="price">Price (₹)</label>
+                <input type="number" id="price" placeholder="e.g. 120" min="0" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="available">Availability</label>
+                <select id="available">
+                    <option value="true">Available</option>
+                    <option value="false">Not Available</option>
+                </select>
+            </div>
+
+            <button type="submit">Add Food Item →</button>
+            <p id="message"></p>
+        </form>
+    </section>
+
+</main>
+
+<footer>
+    <p>© 2026 CampusEats | Made for Campus Food Lovers ❤️</p>
+</footer>
+
+<script>
+    const menuList = document.getElementById("menuList");
+    const itemCount = document.getElementById("itemCount");
+    const itemForm = document.getElementById("itemForm");
+    const message = document.getElementById("message");
+
+    async function loadItems() {
+        try {
+            const response = await fetch("/items");
+            const items = await response.json();
+
+            menuList.innerHTML = "";
+            itemCount.textContent = items.length + " Items";
+
+            if (items.length === 0) {
+                menuList.textContent = "No food items available.";
+                return;
+            }
+
+            items.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "food-card";
+
+                const icon = document.createElement("div");
+                icon.className = "food-icon";
+                icon.textContent = "🍽️";
+
+                const details = document.createElement("div");
+                details.className = "food-details";
+
+                const name = document.createElement("h3");
+                name.textContent = item.name;
+
+                const price = document.createElement("p");
+                price.className = "price";
+                price.textContent = "₹" + item.price;
+
+                const status = document.createElement("span");
+                status.className = item.available ? "available" : "unavailable";
+                status.textContent = item.available ? "● Available" : "● Unavailable";
+
+                details.appendChild(name);
+                details.appendChild(price);
+                details.appendChild(status);
+
+                card.appendChild(icon);
+                card.appendChild(details);
+
+                menuList.appendChild(card);
+            });
+
+        } catch (error) {
+            menuList.textContent = "Unable to load menu. Please check the server.";
+        }
+    }
+
+    itemForm.addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const newItem = {
+            name: document.getElementById("name").value.trim(),
+            price: Number(document.getElementById("price").value),
+            available: document.getElementById("available").value === "true"
+        };
+
+        try {
+            const response = await fetch("/items", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newItem)
+            });
+
+            const result = await response.json();
+
+            if (response.status === 201) {
+                message.textContent = "✓ Food item added successfully!";
+                message.className = "success";
+                itemForm.reset();
+                await loadItems();
+            } else {
+                message.textContent = result.error || "Unable to add item.";
+                message.className = "error";
+            }
+
+        } catch (error) {
+            message.textContent = "Server error. Please try again.";
+            message.className = "error";
+        }
+    });
+
+    loadItems();
+</script>
+
+</body>
+</html>
