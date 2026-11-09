@@ -1,0 +1,16 @@
+# Secrets and local configuration
+.env
+backend/.env
+frontend/.env
+# Java
+backend/target/
+*.class
+# Node
+frontend/node_modules/
+frontend/dist/
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
+# Demo output (attach screenshots/video through drive)
+# Screenshots are evidence and should be committed after checking for secrets.
