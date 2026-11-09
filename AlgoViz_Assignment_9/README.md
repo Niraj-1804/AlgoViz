@@ -13,7 +13,7 @@ AlgoViz shows data structures and algorithms visually. This submission implement
 | Mohd Rashid | 20251651057 |
 
 ## Submission links
-- GitHub repository: **Pending — paste actual repository URL after push**
+- GitHub repository: **Pending — https://github.com/Niraj-1804/AlgoViz/tree/main/AlgoViz_Assignment_9
 - Google Drive demo video: https://drive.google.com/file/d/1f9dF_LaLYRpNQCU-l7lU5X3T-cwpkd9o/view?usp=drive_link
 - Google Drive API screenshots: https://drive.google.com/drive/folders/1ph6kIMztOLi7OPoZQX2XetYLyefLnZ3Q?usp=drive_link
 
