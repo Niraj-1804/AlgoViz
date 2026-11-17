@@ -1,0 +1,280 @@
+
+.tree-page {
+    padding: 24px;
+    color: #e5e7eb;
+    background: #111827;
+    border-radius: 16px;
+    min-height: 400px;
+}
+
+.tree-page h2 {
+    color: #93c5fd;
+    margin-top: 0;
+}
+
+.tree-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.tree-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 14px;
+}
+
+.tree-controls input,
+.tree-controls select {
+    box-sizing: border-box;
+    padding: 10px;
+    min-width: 150px;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    color: #f8fafc;
+    background: #1f2937;
+}
+
+.tree-controls button {
+    padding: 11px 16px;
+    border: 0;
+    border-radius: 8px;
+    color: white;
+    background: #2563eb;
+    cursor: pointer;
+    font: inherit;
+}
+
+.tree-controls button:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+.tree-controls button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.tree-controls .tree-reset {
+    background: #475569;
+}
+
+.tree-controls .tree-reset:hover:not(:disabled) {
+    background: #64748b;
+}
+
+.tree-message {
+    color: #bfdbfe;
+    overflow-wrap: anywhere;
+}
+
+.tree-canvas {
+    min-height: 200px;
+    padding: 28px 16px;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    background: #0b1220;
+}
+
+/* Each node and its descendants */
+.tree-node-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: max-content;
+    flex-shrink: 0;
+}
+
+.tree-node {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    color: white;
+    font-weight: 700;
+    background: #2563eb;
+    border: 2px solid #93c5fd;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 12px rgb(37 99 235 / 25%);
+}
+
+/* Left and right child columns */
+.tree-children {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+}
+
+/* Vertical line from parent towards the children */
+.tree-children::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 24px;
+    border-left: 2px solid #64748b;
+}
+
+/* Space between parent and child nodes */
+.tree-child {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px 0;
+}
+
+/* Vertical line above each child */
+.tree-child > .tree-node-wrapper::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 24px;
+    border-left: 2px solid #64748b;
+}
+
+/* Horizontal connector across sibling nodes */
+.tree-children:has(> .tree-child:first-child > .tree-node-wrapper):has(
+  > .tree-child:last-child > .tree-node-wrapper
+) > .tree-child:first-child::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    border-top: 2px solid #64748b;
+}
+
+.tree-children:has(> .tree-child:first-child > .tree-node-wrapper):has(
+  > .tree-child:last-child > .tree-node-wrapper
+) > .tree-child:last-child::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    border-top: 2px solid #64748b;
+}
+
+.tree-traversals {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 10px;
+    background: #1f2937;
+    overflow-wrap: anywhere;
+}
+
+.tree-traversals h3 {
+    margin-top: 0;
+    color: #93c5fd;
+}
+
+.tree-traversals p {
+    line-height: 1.7;
+}
+
+@media (max-width: 600px) {
+    .tree-page {
+        padding: 14px;
+    }
+
+    .tree-controls {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .tree-controls label,
+    .tree-controls input,
+    .tree-controls select {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .tree-canvas {
+        justify-content: flex-start;
+    }
+}
+
+/* Active node and insertion animation */
+.tree-node {
+    transition:
+            background-color 0.25s ease,
+            transform 0.25s ease,
+            box-shadow 0.25s ease;
+}
+
+/* Node currently being checked */
+.tree-node.active-node {
+    background: #d97706;
+    border-color: #fcd34d;
+    transform: scale(1.15);
+    box-shadow: 0 0 16px rgb(245 158 11 / 55%);
+}
+
+/* Newly inserted node */
+.tree-node.inserted-node {
+    background: #059669;
+    border-color: #6ee7b7;
+    box-shadow: 0 0 16px rgb(16 185 129 / 45%);
+}
+
+/* Animation speed control */
+.tree-speed {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0 16px;
+    color: #e5e7eb;
+}
+
+.tree-speed select {
+    padding: 8px;
+    border-radius: 8px;
+    background: #1f2937;
+    color: #f8fafc;
+    border: 1px solid #475569;
+}
+
+/* Color legend */
+.tree-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #cbd5e1;
+}
+
+.tree-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.tree-legend i {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-active {
+    background: #d97706;
+}
+
+.legend-inserted {
+    background: #059669;
+}
